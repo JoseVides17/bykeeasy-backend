@@ -2,10 +2,13 @@ package com.bykeeasy.infrastructure.adapter.out.persistence.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "passengers")
-@Data
+@Getter
+@Setter
 public class PassengerEntity {
     
     @Id
