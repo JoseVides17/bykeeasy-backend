@@ -10,6 +10,7 @@ import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringData
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataUserRepository;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataWalletRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.List;
@@ -23,12 +24,16 @@ public class WalletPersistenceAdapter implements WalletRepositoryPort {
     private final SpringDataUserRepository userRepository;
 
     @Override
+    @Transactional
     public Wallet save(Wallet wallet) {
+        boolean isNew = !walletRepository.existsById(wallet.getId());
+        
         UserEntity user = userRepository.findById(wallet.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found for wallet creation: " + wallet.getUserId()));
                 
         WalletEntity entity = PersistenceMapper.toEntity(wallet);
         entity.setUser(user);
+        entity.setNew(isNew);
         
         WalletEntity saved = walletRepository.save(entity);
         return PersistenceMapper.toDomain(saved);
@@ -41,6 +46,7 @@ public class WalletPersistenceAdapter implements WalletRepositoryPort {
     }
 
     @Override
+    @Transactional
     public Transaction saveTransaction(Transaction transaction) {
         TransactionEntity entity = PersistenceMapper.toEntity(transaction);
         TransactionEntity saved = transactionRepository.save(entity);

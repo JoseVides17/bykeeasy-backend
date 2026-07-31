@@ -1,17 +1,18 @@
 package com.bykeeasy.infrastructure.adapter.out.persistence.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.domain.Persistable;
 
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "wallets")
-@Data
+@Getter
+@Setter
 public class WalletEntity implements Persistable<String> {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     @OneToOne
@@ -20,7 +21,7 @@ public class WalletEntity implements Persistable<String> {
 
     private BigDecimal balance;
 
-    @Transient // No se persiste en la BD
+    @Transient
     private boolean isNew = true;
 
     @Override
@@ -33,11 +34,9 @@ public class WalletEntity implements Persistable<String> {
         return isNew;
     }
 
-    // Callbacks de JPA para marcar la entidad como persistida
     @PostLoad
     @PostPersist
     void markNotNew() {
         this.isNew = false;
     }
-
 }

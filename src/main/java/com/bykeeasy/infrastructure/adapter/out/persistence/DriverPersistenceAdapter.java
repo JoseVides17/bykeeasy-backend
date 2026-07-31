@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 public class DriverPersistenceAdapter implements DriverRepositoryPort {
@@ -22,6 +23,8 @@ public class DriverPersistenceAdapter implements DriverRepositoryPort {
     @Override
     @Transactional
     public Driver save(Driver driver) {
+        boolean isNewUser = !userRepository.existsById(driver.getId());
+
         UserEntity user = userRepository.findById(driver.getId())
                 .orElseGet(() -> {
                     UserEntity ue = new UserEntity();
@@ -37,26 +40,23 @@ public class DriverPersistenceAdapter implements DriverRepositoryPort {
         user.setPhone(driver.getPhone());
         user.setProfileImageUrl(driver.getProfileImageUrl());
         user.setRating(driver.getQualification());
+        user.setNew(isNewUser);
                 
         DriverEntity entity = PersistenceMapper.toEntity(driver);
         entity.setUser(user);
+        entity.setNew(isNewUser);
         user.setDriver(entity);
         
-        // Ensure wallet for new users
+        // Ensure wallet for users
         if (user.getWallet() == null) {
             WalletEntity wallet = new WalletEntity();
-            wallet.setId(java.util.UUID.randomUUID().toString());
+            wallet.setId(UUID.randomUUID().toString());
             wallet.setUser(user);
             wallet.setBalance(java.math.BigDecimal.ZERO);
+            wallet.setNew(true);
             user.setWallet(wallet);
-        }
-        
-        if (!userRepository.existsById(user.getId())) {
-            user.setNew(true);
-            entity.setNew(true);
         } else {
-            user.setNew(false);
-            entity.setNew(false);
+            user.getWallet().setNew(false);
         }
         
         UserEntity savedUser = userRepository.save(user);

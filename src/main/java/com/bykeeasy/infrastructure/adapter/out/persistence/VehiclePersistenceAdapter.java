@@ -7,6 +7,7 @@ import com.bykeeasy.infrastructure.adapter.out.persistence.entity.VehicleEntity;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataDriverRepository;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataVehicleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +20,10 @@ public class VehiclePersistenceAdapter implements VehicleRepositoryPort {
     private final SpringDataDriverRepository driverRepository;
 
     @Override
+    @Transactional
     public Vehicle save(Vehicle vehicle, String driverId) {
+        boolean isNew = !vehicleRepository.existsById(vehicle.getId());
+        
         DriverEntity driver = null;
         if (driverId != null) {
             driver = driverRepository.findById(driverId)
@@ -27,6 +31,8 @@ public class VehiclePersistenceAdapter implements VehicleRepositoryPort {
         }
                 
         VehicleEntity entity = PersistenceMapper.toEntity(vehicle);
+        entity.setNew(isNew);
+        
         if (driver != null) {
             entity.setDriver(driver);
         } else {

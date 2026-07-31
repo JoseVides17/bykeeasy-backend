@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 public class PassengerPersistenceAdapter implements PassengerRepositoryPort {
@@ -22,6 +23,8 @@ public class PassengerPersistenceAdapter implements PassengerRepositoryPort {
     @Override
     @Transactional
     public Passenger save(Passenger passenger) {
+        boolean isNewUser = !userRepository.existsById(passenger.getId());
+        
         UserEntity user = userRepository.findById(passenger.getId())
                 .orElseGet(() -> {
                     UserEntity ue = new UserEntity();
@@ -29,34 +32,30 @@ public class PassengerPersistenceAdapter implements PassengerRepositoryPort {
                     ue.setEmail(passenger.getEmail());
                     ue.setPassword(passenger.getPassword());
                     ue.setRole(UserRole.PASSENGER);
-                    ue.setNew(true); // Mark as new for persist
+                    ue.setNew(true);
                     return ue;
                 });
         
         user.setFullName(passenger.getName());
         user.setPhone(passenger.getPhone());
         user.setProfileImageUrl(passenger.getProfileImageUrl());
+        user.setNew(isNewUser);
                 
         PassengerEntity entity = PersistenceMapper.toEntity(passenger);
         entity.setUser(user);
+        entity.setNew(isNewUser);
         user.setPassenger(entity);
         
-        // Ensure wallet for new users
+        // Ensure wallet for users
         if (user.getWallet() == null) {
             WalletEntity wallet = new WalletEntity();
-            wallet.setId(java.util.UUID.randomUUID().toString());
+            wallet.setId(UUID.randomUUID().toString());
             wallet.setUser(user);
             wallet.setBalance(java.math.BigDecimal.ZERO);
+            wallet.setNew(true);
             user.setWallet(wallet);
-        }
-        
-        // Mark both as new if necessary
-        if (!userRepository.existsById(user.getId())) {
-            user.setNew(true);
-            entity.setNew(true);
         } else {
-            user.setNew(false);
-            entity.setNew(false); 
+            user.getWallet().setNew(false);
         }
         
         UserEntity savedUser = userRepository.save(user);
