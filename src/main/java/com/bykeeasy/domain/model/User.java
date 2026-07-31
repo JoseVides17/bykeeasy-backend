@@ -21,7 +21,8 @@ public class User {
     private String propertyCardImageUrl;
 
     public User(String id, String fullName, String phone, String email, String passwordHash,
-                UserRole role, boolean active, double rating, int numberOfReviews, String profileImageUrl) {
+                UserRole role, boolean active, double rating, int numberOfReviews, String profileImageUrl,
+                String licenseImageUrl, String soatImageUrl, String propertyCardImageUrl) {
         this.id = id;
         this.fullName = fullName;
         this.phone = phone;

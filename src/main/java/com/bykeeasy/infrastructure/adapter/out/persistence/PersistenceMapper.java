@@ -20,7 +20,10 @@ public class PersistenceMapper {
                 entity.isActive(),
                 entity.getRating(),
                 entity.getNumberOfReviews(),
-                entity.getProfileImageUrl()
+                entity.getProfileImageUrl(),
+                entity.getDriver() != null ? entity.getDriver().getLicenseImageUrl() : null,
+                entity.getDriver() != null ? entity.getDriver().getSoatImageUrl() : null,
+                entity.getDriver() != null ? entity.getDriver().getPropertyCardImageUrl() : null
         );
     }
     
