@@ -11,11 +11,16 @@ import com.bykeeasy.infrastructure.adapter.out.persistence.repository.*;
 import com.bykeeasy.application.port.in.*;
 import com.bykeeasy.application.port.out.*;
 import com.bykeeasy.application.service.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class BeanConfiguration {
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Bean
     public JourneyRepositoryPort journeyRepositoryPort(SpringDataJourneyRepository springDataJourneyRepository) {
@@ -24,12 +29,12 @@ public class BeanConfiguration {
 
     @Bean
     public DriverRepositoryPort driverRepositoryPort(SpringDataDriverRepository springDataDriverRepository, SpringDataUserRepository userRepository) {
-        return new DriverPersistenceAdapter(springDataDriverRepository, userRepository);
+        return new DriverPersistenceAdapter(springDataDriverRepository, userRepository, entityManager);
     }
 
     @Bean
     public PassengerRepositoryPort passengerRepositoryPort(SpringDataPassengerRepository springDataPassengerRepository, SpringDataUserRepository userRepository) {
-        return new PassengerPersistenceAdapter(springDataPassengerRepository, userRepository);
+        return new PassengerPersistenceAdapter(springDataPassengerRepository, userRepository, entityManager);
     }
 
     @Bean
@@ -39,7 +44,7 @@ public class BeanConfiguration {
 
     @Bean
     public WalletRepositoryPort walletRepositoryPort(SpringDataWalletRepository walletRepository, SpringDataTransactionRepository transactionRepository, SpringDataUserRepository userRepository) {
-        return new WalletPersistenceAdapter(walletRepository, transactionRepository, userRepository);
+        return new WalletPersistenceAdapter(walletRepository, transactionRepository, userRepository, entityManager);
     }
 
     @Bean
