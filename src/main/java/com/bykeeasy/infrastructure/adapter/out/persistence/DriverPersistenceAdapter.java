@@ -7,6 +7,8 @@ import com.bykeeasy.infrastructure.adapter.out.persistence.entity.DriverEntity;
 import com.bykeeasy.infrastructure.adapter.out.persistence.entity.UserEntity;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataDriverRepository;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataUserRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Optional;
@@ -16,6 +18,9 @@ public class DriverPersistenceAdapter implements DriverRepositoryPort {
 
     private final SpringDataDriverRepository driverRepository;
     private final SpringDataUserRepository userRepository;
+
+    @PersistenceContext
+    private final EntityManager entityManager;
 
     @Override
     public Driver save(Driver driver) {
@@ -34,17 +39,12 @@ public class DriverPersistenceAdapter implements DriverRepositoryPort {
         user.setProfileImageUrl(driver.getProfileImageUrl());
         user.setRating(driver.getQualification());
 
-        // 1. Guardamos y RECUPERAMOS la referencia gestionada por Spring Data
-        UserEntity savedUser = userRepository.save(user);
-
-        // 2. Mappeamos la entidad principal
+        UserEntity savedUser = entityManager.merge(user);
         DriverEntity entity = PersistenceMapper.toEntity(driver);
-
-        // 3. Enlazamos la referencia ÚNICA
         entity.setUser(savedUser);
         entity.setUserId(savedUser.getId());
 
-        DriverEntity saved = driverRepository.save(entity);
+        DriverEntity saved = entityManager.merge(entity);
         return PersistenceMapper.toDomain(saved);
     }
 

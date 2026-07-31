@@ -9,6 +9,8 @@ import com.bykeeasy.infrastructure.adapter.out.persistence.entity.WalletEntity;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataTransactionRepository;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataUserRepository;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataWalletRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Optional;
@@ -21,16 +23,21 @@ public class WalletPersistenceAdapter implements WalletRepositoryPort {
     private final SpringDataWalletRepository walletRepository;
     private final SpringDataTransactionRepository transactionRepository;
     private final SpringDataUserRepository userRepository;
+    @PersistenceContext
+    private final EntityManager entityManager;
 
     @Override
     public Wallet save(Wallet wallet) {
-        UserEntity user = userRepository.findById(wallet.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found for wallet creation: " + wallet.getUserId()));
-                
         WalletEntity entity = PersistenceMapper.toEntity(wallet);
-        entity.setUser(user);
-        
-        WalletEntity saved = walletRepository.save(entity);
+
+        if (wallet.getUserId() != null) {
+            UserEntity user = userRepository.findById(wallet.getUserId())
+                    .orElseThrow(() -> new RuntimeException("User not found for wallet creation: " + wallet.getUserId()));
+            entity.setUser(user);
+        }
+
+        // Usar merge evita "detached entity" y "optimistic locking"
+        WalletEntity saved = entityManager.merge(entity);
         return PersistenceMapper.toDomain(saved);
     }
 
