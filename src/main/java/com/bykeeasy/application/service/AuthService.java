@@ -9,6 +9,8 @@ import com.bykeeasy.domain.model.Passenger;
 import com.bykeeasy.domain.model.User;
 import com.bykeeasy.domain.model.UserRole;
 import com.bykeeasy.domain.model.Wallet;
+import org.springframework.transaction.annotation.Transactional; // Importante
+
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -38,7 +40,7 @@ public class AuthService implements AuthUseCase {
                         p.getPassword(),
                         UserRole.PASSENGER,
                         true,
-                        4.5,0,
+                        4.5, 0,
                         p.getProfileImageUrl()
                 );
             }
@@ -56,7 +58,7 @@ public class AuthService implements AuthUseCase {
                         d.getPassword(), // passwordHash
                         UserRole.DRIVER,
                         true,
-                        4.5,0,
+                        4.5, 0,
                         d.getProfileImageUrl()
                 );
             }
@@ -66,21 +68,24 @@ public class AuthService implements AuthUseCase {
     }
 
     @Override
+    @Transactional // <--- Mantiene ambas operaciones dentro de la misma transacción de BD
     public User register(String fullName, String email, String password, String phone, UserRole role) {
         String id = UUID.randomUUID().toString();
-        
-        // Ensure wallet exists for new user
-        walletRepository.save(new Wallet(UUID.randomUUID().toString(), id, BigDecimal.ZERO));
 
         if (role == UserRole.PASSENGER) {
+            // 1. Guardar primero el Pasajero
             Passenger p = new Passenger(id, fullName, phone, email, password, 0, null);
             Passenger saved = passengerRepository.save(p);
+
+            // 2. Crear la billetera DESPUÉS de persistir el usuario
+            walletRepository.save(new Wallet(UUID.randomUUID().toString(), saved.getId(), BigDecimal.ZERO));
+
             return new User(
                     saved.getId(),
-                    saved.getName(),     // fullName
-                    saved.getPhone(),    // phone
-                    saved.getEmail(),    // email
-                    saved.getPassword(), // passwordHash
+                    saved.getName(),
+                    saved.getPhone(),
+                    saved.getEmail(),
+                    saved.getPassword(),
                     UserRole.PASSENGER,
                     true,
                     4.5,
@@ -88,14 +93,19 @@ public class AuthService implements AuthUseCase {
                     null
             );
         } else if (role == UserRole.DRIVER) {
+            // 1. Guardar primero el Conductor
             Driver d = new Driver(id, fullName, phone, email, password, 0, null, null, null);
             Driver saved = driverRepository.save(d);
+
+            // 2. Crear la billetera DESPUÉS de persistir el usuario
+            walletRepository.save(new Wallet(UUID.randomUUID().toString(), saved.getId(), BigDecimal.ZERO));
+
             return new User(
                     saved.getId(),
-                    saved.getName(),     // fullName
-                    saved.getPhone(),    // phone
-                    saved.getEmail(),    // email
-                    saved.getPassword(), // passwordHash
+                    saved.getName(),
+                    saved.getPhone(),
+                    saved.getEmail(),
+                    saved.getPassword(),
                     UserRole.DRIVER,
                     true,
                     4.5,
@@ -113,13 +123,13 @@ public class AuthService implements AuthUseCase {
             Passenger p = passengerOpt.get();
             return new User(p.getId(), p.getName(), p.getPhone(), p.getEmail(), p.getPassword(), UserRole.PASSENGER, true, 4.5, 0, p.getProfileImageUrl());
         }
-        
+
         var driverOpt = driverRepository.findById(userId);
         if (driverOpt.isPresent()) {
             Driver d = driverOpt.get();
             return new User(d.getId(), d.getName(), d.getPhone(), d.getEmail(), d.getPassword(), UserRole.DRIVER, true, 4.5, 0, d.getProfileImageUrl());
         }
-        
+
         throw new RuntimeException("Usuario no encontrado");
     }
 }
