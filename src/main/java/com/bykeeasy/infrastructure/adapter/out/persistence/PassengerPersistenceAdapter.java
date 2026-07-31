@@ -28,15 +28,23 @@ public class PassengerPersistenceAdapter implements PassengerRepositoryPort {
                     ue.setRole(UserRole.PASSENGER);
                     return ue;
                 });
-        
+
         user.setFullName(passenger.getName());
         user.setPhone(passenger.getPhone());
         user.setProfileImageUrl(passenger.getProfileImageUrl());
-        userRepository.save(user);
-                
+
+        // 1. Guardamos y RECUPERAMOS la referencia gestionada por Spring Data
+        UserEntity savedUser = userRepository.save(user);
+
+        // 2. Mappeamos la entidad principal
         PassengerEntity entity = PersistenceMapper.toEntity(passenger);
-        entity.setUser(user);
-        
+
+        // 3. Enlazamos la referencia ÚNICA y gestionada por JPA
+        entity.setUser(savedUser);
+
+        // 4. Asegúrate de que el ID de PassengerEntity sea el mismo si no usas @MapsId
+        entity.setUserId(savedUser.getId());
+
         PassengerEntity saved = passengerRepository.save(entity);
         return PersistenceMapper.toDomain(saved);
     }

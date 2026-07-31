@@ -28,16 +28,22 @@ public class DriverPersistenceAdapter implements DriverRepositoryPort {
                     ue.setRole(UserRole.DRIVER);
                     return ue;
                 });
-        
+
         user.setFullName(driver.getName());
         user.setPhone(driver.getPhone());
         user.setProfileImageUrl(driver.getProfileImageUrl());
         user.setRating(driver.getQualification());
-        userRepository.save(user);
-                
+
+        // 1. Guardamos y RECUPERAMOS la referencia gestionada por Spring Data
+        UserEntity savedUser = userRepository.save(user);
+
+        // 2. Mappeamos la entidad principal
         DriverEntity entity = PersistenceMapper.toEntity(driver);
-        entity.setUser(user);
-        
+
+        // 3. Enlazamos la referencia ÚNICA
+        entity.setUser(savedUser);
+        entity.setUserId(savedUser.getId());
+
         DriverEntity saved = driverRepository.save(entity);
         return PersistenceMapper.toDomain(saved);
     }
