@@ -5,13 +5,12 @@ import com.bykeeasy.domain.model.DriverVerificationStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.domain.Persistable;
 
 @Entity
 @Table(name = "drivers")
 @Getter
 @Setter
-public class DriverEntity implements Persistable<String> {
+public class DriverEntity {
     @Id
     private String userId;
 
@@ -35,23 +34,4 @@ public class DriverEntity implements Persistable<String> {
 
     private Double currentLatitude;
     private Double currentLongitude;
-
-    @Transient
-    private boolean isNew = true;
-
-    @Override
-    public String getId() {
-        return this.userId;
-    }
-
-    @Override
-    public boolean isNew() {
-        return isNew;
-    }
-
-    @PostLoad
-    @PostPersist
-    void markNotNew() {
-        this.isNew = false;
-    }
 }

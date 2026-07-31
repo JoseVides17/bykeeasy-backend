@@ -1,22 +1,21 @@
 package com.bykeeasy.infrastructure.config;
-// Deployment fix: Removed EntityManager from constructors
 
-import com.bykeeasy.infrastructure.adapter.out.persistence.DriverPersistenceAdapter;
-import com.bykeeasy.infrastructure.adapter.out.persistence.JourneyPersistenceAdapter;
-import com.bykeeasy.infrastructure.adapter.out.persistence.OfferPersistenceAdapter;
-import com.bykeeasy.infrastructure.adapter.out.persistence.PassengerPersistenceAdapter;
-import com.bykeeasy.infrastructure.adapter.out.persistence.WalletPersistenceAdapter;
-import com.bykeeasy.infrastructure.adapter.out.persistence.FavoritePlacePersistenceAdapter;
+import com.bykeeasy.infrastructure.adapter.out.persistence.*;
 import com.bykeeasy.infrastructure.adapter.out.payment.MockPaymentAdapter;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.*;
 import com.bykeeasy.application.port.in.*;
 import com.bykeeasy.application.port.out.*;
 import com.bykeeasy.application.service.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class BeanConfiguration {
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Bean
     public JourneyRepositoryPort journeyRepositoryPort(SpringDataJourneyRepository springDataJourneyRepository) {
@@ -25,12 +24,12 @@ public class BeanConfiguration {
 
     @Bean
     public DriverRepositoryPort driverRepositoryPort(SpringDataDriverRepository springDataDriverRepository, SpringDataUserRepository userRepository) {
-        return new DriverPersistenceAdapter(springDataDriverRepository, userRepository);
+        return new DriverPersistenceAdapter(springDataDriverRepository, userRepository, entityManager);
     }
 
     @Bean
     public PassengerRepositoryPort passengerRepositoryPort(SpringDataPassengerRepository springDataPassengerRepository, SpringDataUserRepository userRepository) {
-        return new PassengerPersistenceAdapter(springDataPassengerRepository, userRepository);
+        return new PassengerPersistenceAdapter(springDataPassengerRepository, userRepository, entityManager);
     }
 
     @Bean
@@ -40,7 +39,7 @@ public class BeanConfiguration {
 
     @Bean
     public WalletRepositoryPort walletRepositoryPort(SpringDataWalletRepository walletRepository, SpringDataTransactionRepository transactionRepository, SpringDataUserRepository userRepository) {
-        return new WalletPersistenceAdapter(walletRepository, transactionRepository, userRepository);
+        return new WalletPersistenceAdapter(walletRepository, transactionRepository, userRepository, entityManager);
     }
 
     @Bean
@@ -120,7 +119,7 @@ public class BeanConfiguration {
 
     @Bean
     public VehicleRepositoryPort vehicleRepositoryPort(SpringDataVehicleRepository vehicleRepository, SpringDataDriverRepository driverRepository) {
-        return new com.bykeeasy.infrastructure.adapter.out.persistence.VehiclePersistenceAdapter(vehicleRepository, driverRepository);
+        return new VehiclePersistenceAdapter(vehicleRepository, driverRepository, entityManager);
     }
 
     @Bean

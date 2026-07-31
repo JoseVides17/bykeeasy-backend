@@ -3,13 +3,12 @@ package com.bykeeasy.infrastructure.adapter.out.persistence.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.domain.Persistable;
 
 @Entity
 @Table(name = "vehicles")
 @Getter
 @Setter
-public class VehicleEntity implements Persistable<String> {
+public class VehicleEntity {
     @Id
     private String id;
 
@@ -23,18 +22,4 @@ public class VehicleEntity implements Persistable<String> {
     private String vehicleColor;
     private String vehicleBrand;
     private String imageUrl;
-
-    @Transient
-    private boolean isNew = true;
-
-    @Override
-    public boolean isNew() {
-        return isNew;
-    }
-
-    @PostLoad
-    @PostPersist
-    void markNotNew() {
-        this.isNew = false;
-    }
 }

@@ -9,33 +9,42 @@ import com.bykeeasy.infrastructure.adapter.out.persistence.entity.WalletEntity;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataTransactionRepository;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataUserRepository;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataWalletRepository;
-import lombok.RequiredArgsConstructor;
+import jakarta.persistence.EntityManager;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
 public class WalletPersistenceAdapter implements WalletRepositoryPort {
 
     private final SpringDataWalletRepository walletRepository;
     private final SpringDataTransactionRepository transactionRepository;
     private final SpringDataUserRepository userRepository;
+    private final EntityManager entityManager;
+
+    public WalletPersistenceAdapter(SpringDataWalletRepository walletRepository, 
+                                    SpringDataTransactionRepository transactionRepository, 
+                                    SpringDataUserRepository userRepository, 
+                                    EntityManager entityManager) {
+        this.walletRepository = walletRepository;
+        this.transactionRepository = transactionRepository;
+        this.userRepository = userRepository;
+        this.entityManager = entityManager;
+    }
 
     @Override
     @Transactional
     public Wallet save(Wallet wallet) {
-        boolean isNew = !walletRepository.existsById(wallet.getId());
-        
-        UserEntity user = userRepository.findById(wallet.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found for wallet creation: " + wallet.getUserId()));
-                
         WalletEntity entity = PersistenceMapper.toEntity(wallet);
-        entity.setUser(user);
-        entity.setNew(isNew);
         
-        WalletEntity saved = walletRepository.save(entity);
+        if (wallet.getUserId() != null) {
+            UserEntity user = userRepository.findById(wallet.getUserId())
+                    .orElseThrow(() -> new RuntimeException("User not found for wallet creation: " + wallet.getUserId()));
+            entity.setUser(user);
+        }
+        
+        WalletEntity saved = entityManager.merge(entity);
         return PersistenceMapper.toDomain(saved);
     }
 
@@ -49,7 +58,7 @@ public class WalletPersistenceAdapter implements WalletRepositoryPort {
     @Transactional
     public Transaction saveTransaction(Transaction transaction) {
         TransactionEntity entity = PersistenceMapper.toEntity(transaction);
-        TransactionEntity saved = transactionRepository.save(entity);
+        TransactionEntity saved = entityManager.merge(entity);
         return PersistenceMapper.toDomain(saved);
     }
 

@@ -4,13 +4,12 @@ import com.bykeeasy.domain.model.UserRole;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.domain.Persistable;
 
 @Entity
 @Table(name = "users")
 @Getter
 @Setter
-public class UserEntity implements Persistable<String> {
+public class UserEntity {
     @Id
     private String id;
 
@@ -40,18 +39,4 @@ public class UserEntity implements Persistable<String> {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private DriverEntity driver;
-
-    @Transient
-    private boolean isNew = true;
-
-    @Override
-    public boolean isNew() {
-        return isNew;
-    }
-
-    @PostLoad
-    @PostPersist
-    void markNotNew() {
-        this.isNew = false;
-    }
 }

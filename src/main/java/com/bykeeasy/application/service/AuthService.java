@@ -8,10 +8,8 @@ import com.bykeeasy.domain.model.Driver;
 import com.bykeeasy.domain.model.Passenger;
 import com.bykeeasy.domain.model.User;
 import com.bykeeasy.domain.model.UserRole;
-import com.bykeeasy.domain.model.Wallet;
-import org.springframework.transaction.annotation.Transactional; // Importante
+import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 public class AuthService implements AuthUseCase {
@@ -41,7 +39,8 @@ public class AuthService implements AuthUseCase {
                         UserRole.PASSENGER,
                         true,
                         4.5, 0,
-                        p.getProfileImageUrl()
+                        p.getProfileImageUrl(),
+                        null, null, null
                 );
             }
         }
@@ -59,7 +58,10 @@ public class AuthService implements AuthUseCase {
                         UserRole.DRIVER,
                         true,
                         4.5, 0,
-                        d.getProfileImageUrl()
+                        d.getProfileImageUrl(),
+                        d.getLicenseImageUrl(),
+                        d.getSoatImageUrl(),
+                        d.getPropertyCardImageUrl()
                 );
             }
         }
@@ -68,17 +70,19 @@ public class AuthService implements AuthUseCase {
     }
 
     @Override
-    @Transactional // <--- Mantiene ambas operaciones dentro de la misma transacción de BD
+    @Transactional
     public User register(String fullName, String email, String password, String phone, UserRole role) {
+        // 1. Check if email exists
+        if (passengerRepository.findByEmail(email).isPresent() || driverRepository.findByEmail(email).isPresent()) {
+            throw new RuntimeException("El correo electrónico ya está en uso");
+        }
+
         String id = UUID.randomUUID().toString();
 
         if (role == UserRole.PASSENGER) {
-            // 1. Guardar primero el Pasajero
             Passenger p = new Passenger(id, fullName, phone, email, password, 0, null);
+            // The adapter now handles User and Wallet creation atomically
             Passenger saved = passengerRepository.save(p);
-
-            // 2. Crear la billetera DESPUÉS de persistir el usuario
-            walletRepository.save(new Wallet(UUID.randomUUID().toString(), saved.getId(), BigDecimal.ZERO));
 
             return new User(
                     saved.getId(),
@@ -88,17 +92,14 @@ public class AuthService implements AuthUseCase {
                     saved.getPassword(),
                     UserRole.PASSENGER,
                     true,
-                    4.5,
-                    0,
-                    null
+                    4.5, 0,
+                    null,
+                    null, null, null
             );
         } else if (role == UserRole.DRIVER) {
-            // 1. Guardar primero el Conductor
             Driver d = new Driver(id, fullName, phone, email, password, 0, null, null, null);
+            // The adapter now handles User and Wallet creation atomically
             Driver saved = driverRepository.save(d);
-
-            // 2. Crear la billetera DESPUÉS de persistir el usuario
-            walletRepository.save(new Wallet(UUID.randomUUID().toString(), saved.getId(), BigDecimal.ZERO));
 
             return new User(
                     saved.getId(),
@@ -108,9 +109,9 @@ public class AuthService implements AuthUseCase {
                     saved.getPassword(),
                     UserRole.DRIVER,
                     true,
-                    4.5,
-                    0,
-                    null
+                    4.5, 0,
+                    null,
+                    null, null, null
             );
         }
         throw new RuntimeException("Rol no soportado para el registro");
@@ -121,13 +122,13 @@ public class AuthService implements AuthUseCase {
         var passengerOpt = passengerRepository.findById(userId);
         if (passengerOpt.isPresent()) {
             Passenger p = passengerOpt.get();
-            return new User(p.getId(), p.getName(), p.getPhone(), p.getEmail(), p.getPassword(), UserRole.PASSENGER, true, 4.5, 0, p.getProfileImageUrl());
+            return new User(p.getId(), p.getName(), p.getPhone(), p.getEmail(), p.getPassword(), UserRole.PASSENGER, true, 4.5, 0, p.getProfileImageUrl(), null, null, null);
         }
 
         var driverOpt = driverRepository.findById(userId);
         if (driverOpt.isPresent()) {
             Driver d = driverOpt.get();
-            return new User(d.getId(), d.getName(), d.getPhone(), d.getEmail(), d.getPassword(), UserRole.DRIVER, true, 4.5, 0, d.getProfileImageUrl());
+            return new User(d.getId(), d.getName(), d.getPhone(), d.getEmail(), d.getPassword(), UserRole.DRIVER, true, 4.5, 0, d.getProfileImageUrl(), d.getLicenseImageUrl(), d.getSoatImageUrl(), d.getPropertyCardImageUrl());
         }
 
         throw new RuntimeException("Usuario no encontrado");

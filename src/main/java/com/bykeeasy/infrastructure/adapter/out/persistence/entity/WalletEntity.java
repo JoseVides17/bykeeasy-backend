@@ -3,7 +3,6 @@ package com.bykeeasy.infrastructure.adapter.out.persistence.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.domain.Persistable;
 
 import java.math.BigDecimal;
 
@@ -11,7 +10,7 @@ import java.math.BigDecimal;
 @Table(name = "wallets")
 @Getter
 @Setter
-public class WalletEntity implements Persistable<String> {
+public class WalletEntity {
     @Id
     private String id;
 
@@ -20,23 +19,4 @@ public class WalletEntity implements Persistable<String> {
     private UserEntity user;
 
     private BigDecimal balance;
-
-    @Transient
-    private boolean isNew = true;
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public boolean isNew() {
-        return isNew;
-    }
-
-    @PostLoad
-    @PostPersist
-    void markNotNew() {
-        this.isNew = false;
-    }
 }

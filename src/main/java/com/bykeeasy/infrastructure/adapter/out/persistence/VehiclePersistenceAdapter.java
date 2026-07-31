@@ -6,24 +6,30 @@ import com.bykeeasy.infrastructure.adapter.out.persistence.entity.DriverEntity;
 import com.bykeeasy.infrastructure.adapter.out.persistence.entity.VehicleEntity;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataDriverRepository;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataVehicleRepository;
-import lombok.RequiredArgsConstructor;
+import jakarta.persistence.EntityManager;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
 public class VehiclePersistenceAdapter implements VehicleRepositoryPort {
 
     private final SpringDataVehicleRepository vehicleRepository;
     private final SpringDataDriverRepository driverRepository;
+    private final EntityManager entityManager;
+
+    public VehiclePersistenceAdapter(SpringDataVehicleRepository vehicleRepository, 
+                                     SpringDataDriverRepository driverRepository, 
+                                     EntityManager entityManager) {
+        this.vehicleRepository = vehicleRepository;
+        this.driverRepository = driverRepository;
+        this.entityManager = entityManager;
+    }
 
     @Override
     @Transactional
     public Vehicle save(Vehicle vehicle, String driverId) {
-        boolean isNew = !vehicleRepository.existsById(vehicle.getId());
-        
         DriverEntity driver = null;
         if (driverId != null) {
             driver = driverRepository.findById(driverId)
@@ -31,8 +37,6 @@ public class VehiclePersistenceAdapter implements VehicleRepositoryPort {
         }
                 
         VehicleEntity entity = PersistenceMapper.toEntity(vehicle);
-        entity.setNew(isNew);
-        
         if (driver != null) {
             entity.setDriver(driver);
         } else {
@@ -42,7 +46,7 @@ public class VehiclePersistenceAdapter implements VehicleRepositoryPort {
             });
         }
         
-        VehicleEntity saved = vehicleRepository.save(entity);
+        VehicleEntity saved = entityManager.merge(entity);
         return PersistenceMapper.toDomain(saved);
     }
 
