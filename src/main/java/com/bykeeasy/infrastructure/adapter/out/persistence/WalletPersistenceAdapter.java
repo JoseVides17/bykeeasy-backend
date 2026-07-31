@@ -10,28 +10,23 @@ import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringData
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataUserRepository;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataWalletRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 public class WalletPersistenceAdapter implements WalletRepositoryPort {
 
     private final SpringDataWalletRepository walletRepository;
     private final SpringDataTransactionRepository transactionRepository;
     private final SpringDataUserRepository userRepository;
-    private final EntityManager entityManager;
 
-    public WalletPersistenceAdapter(SpringDataWalletRepository walletRepository, 
-                                    SpringDataTransactionRepository transactionRepository, 
-                                    SpringDataUserRepository userRepository, 
-                                    EntityManager entityManager) {
-        this.walletRepository = walletRepository;
-        this.transactionRepository = transactionRepository;
-        this.userRepository = userRepository;
-        this.entityManager = entityManager;
-    }
+    @PersistenceContext
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -44,8 +39,9 @@ public class WalletPersistenceAdapter implements WalletRepositoryPort {
             entity.setUser(user);
         }
         
-        WalletEntity saved = entityManager.merge(entity);
-        return PersistenceMapper.toDomain(saved);
+        // Merge allows assigned IDs safely
+        WalletEntity managed = entityManager.merge(entity);
+        return PersistenceMapper.toDomain(managed);
     }
 
     @Override
@@ -58,8 +54,8 @@ public class WalletPersistenceAdapter implements WalletRepositoryPort {
     @Transactional
     public Transaction saveTransaction(Transaction transaction) {
         TransactionEntity entity = PersistenceMapper.toEntity(transaction);
-        TransactionEntity saved = entityManager.merge(entity);
-        return PersistenceMapper.toDomain(saved);
+        TransactionEntity managed = entityManager.merge(entity);
+        return PersistenceMapper.toDomain(managed);
     }
 
     @Override

@@ -7,25 +7,22 @@ import com.bykeeasy.infrastructure.adapter.out.persistence.entity.VehicleEntity;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataDriverRepository;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataVehicleRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 public class VehiclePersistenceAdapter implements VehicleRepositoryPort {
 
     private final SpringDataVehicleRepository vehicleRepository;
     private final SpringDataDriverRepository driverRepository;
-    private final EntityManager entityManager;
 
-    public VehiclePersistenceAdapter(SpringDataVehicleRepository vehicleRepository, 
-                                     SpringDataDriverRepository driverRepository, 
-                                     EntityManager entityManager) {
-        this.vehicleRepository = vehicleRepository;
-        this.driverRepository = driverRepository;
-        this.entityManager = entityManager;
-    }
+    @PersistenceContext
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -46,8 +43,8 @@ public class VehiclePersistenceAdapter implements VehicleRepositoryPort {
             });
         }
         
-        VehicleEntity saved = entityManager.merge(entity);
-        return PersistenceMapper.toDomain(saved);
+        VehicleEntity managed = entityManager.merge(entity);
+        return PersistenceMapper.toDomain(managed);
     }
 
     @Override

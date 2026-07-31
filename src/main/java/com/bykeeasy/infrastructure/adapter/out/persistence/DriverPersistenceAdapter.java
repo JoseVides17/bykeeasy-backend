@@ -9,24 +9,21 @@ import com.bykeeasy.infrastructure.adapter.out.persistence.entity.WalletEntity;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataDriverRepository;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataUserRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 public class DriverPersistenceAdapter implements DriverRepositoryPort {
 
     private final SpringDataDriverRepository driverRepository;
     private final SpringDataUserRepository userRepository;
-    private final EntityManager entityManager;
 
-    public DriverPersistenceAdapter(SpringDataDriverRepository driverRepository, 
-                                    SpringDataUserRepository userRepository, 
-                                    EntityManager entityManager) {
-        this.driverRepository = driverRepository;
-        this.userRepository = userRepository;
-        this.entityManager = entityManager;
-    }
+    @PersistenceContext
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -46,10 +43,21 @@ public class DriverPersistenceAdapter implements DriverRepositoryPort {
         user.setProfileImageUrl(driver.getProfileImageUrl());
         user.setRating(driver.getQualification());
                 
-        DriverEntity entity = PersistenceMapper.toEntity(driver);
-        entity.setUser(user);
-        user.setDriver(entity);
+        DriverEntity entity = user.getDriver();
+        if (entity == null) {
+            entity = new DriverEntity();
+            entity.setUser(user);
+            user.setDriver(entity);
+        }
         
+        // Actualizar datos del conductor
+        entity.setStatus(driver.getStatus());
+        entity.setVerificationStatus(driver.getVerificationStatus());
+        entity.setLicenseImageUrl(driver.getLicenseImageUrl());
+        entity.setSoatImageUrl(driver.getSoatImageUrl());
+        entity.setPropertyCardImageUrl(driver.getPropertyCardImageUrl());
+        
+        // Ensure wallet
         if (user.getWallet() == null) {
             WalletEntity wallet = new WalletEntity();
             wallet.setId(UUID.randomUUID().toString());
@@ -58,8 +66,9 @@ public class DriverPersistenceAdapter implements DriverRepositoryPort {
             user.setWallet(wallet);
         }
         
-        UserEntity savedUser = entityManager.merge(user);
-        return PersistenceMapper.toDomain(savedUser.getDriver());
+        // Atomic merge
+        UserEntity managedUser = entityManager.merge(user);
+        return PersistenceMapper.toDomain(managedUser.getDriver());
     }
 
     @Override

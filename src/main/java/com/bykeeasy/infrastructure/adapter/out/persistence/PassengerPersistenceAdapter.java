@@ -9,28 +9,26 @@ import com.bykeeasy.infrastructure.adapter.out.persistence.entity.WalletEntity;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataPassengerRepository;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataUserRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 public class PassengerPersistenceAdapter implements PassengerRepositoryPort {
 
     private final SpringDataPassengerRepository passengerRepository;
     private final SpringDataUserRepository userRepository;
-    private final EntityManager entityManager;
 
-    public PassengerPersistenceAdapter(SpringDataPassengerRepository passengerRepository, 
-                                       SpringDataUserRepository userRepository, 
-                                       EntityManager entityManager) {
-        this.passengerRepository = passengerRepository;
-        this.userRepository = userRepository;
-        this.entityManager = entityManager;
-    }
+    @PersistenceContext
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
     public Passenger save(Passenger passenger) {
+        // Use assigned ID directly
         UserEntity user = userRepository.findById(passenger.getId())
                 .orElseGet(() -> {
                     UserEntity ue = new UserEntity();
@@ -45,10 +43,15 @@ public class PassengerPersistenceAdapter implements PassengerRepositoryPort {
         user.setPhone(passenger.getPhone());
         user.setProfileImageUrl(passenger.getProfileImageUrl());
                 
-        PassengerEntity entity = PersistenceMapper.toEntity(passenger);
-        entity.setUser(user);
-        user.setPassenger(entity);
+        // Atomic Link Passenger
+        PassengerEntity entity = user.getPassenger();
+        if (entity == null) {
+            entity = new PassengerEntity();
+            entity.setUser(user);
+            user.setPassenger(entity);
+        }
         
+        // Ensure wallet
         if (user.getWallet() == null) {
             WalletEntity wallet = new WalletEntity();
             wallet.setId(UUID.randomUUID().toString());
@@ -57,8 +60,9 @@ public class PassengerPersistenceAdapter implements PassengerRepositoryPort {
             user.setWallet(wallet);
         }
         
-        UserEntity savedUser = entityManager.merge(user);
-        return PersistenceMapper.toDomain(savedUser.getPassenger());
+        // Use merge for a clean atomic upsert (handles assigned IDs correctly in cloud DBs)
+        UserEntity managedUser = entityManager.merge(user);
+        return PersistenceMapper.toDomain(managedUser.getPassenger());
     }
 
     @Override
