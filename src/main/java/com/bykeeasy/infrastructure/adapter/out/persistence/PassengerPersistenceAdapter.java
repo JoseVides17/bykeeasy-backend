@@ -5,21 +5,19 @@ import com.bykeeasy.domain.model.Passenger;
 import com.bykeeasy.domain.model.UserRole;
 import com.bykeeasy.infrastructure.adapter.out.persistence.entity.PassengerEntity;
 import com.bykeeasy.infrastructure.adapter.out.persistence.entity.UserEntity;
+import com.bykeeasy.infrastructure.adapter.out.persistence.entity.WalletEntity;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataPassengerRepository;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataUserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+@RequiredArgsConstructor
 public class PassengerPersistenceAdapter implements PassengerRepositoryPort {
 
     private final SpringDataPassengerRepository passengerRepository;
     private final SpringDataUserRepository userRepository;
-
-    public PassengerPersistenceAdapter(SpringDataPassengerRepository passengerRepository, SpringDataUserRepository userRepository) {
-        this.passengerRepository = passengerRepository;
-        this.userRepository = userRepository;
-    }
 
     @Override
     @Transactional
@@ -43,13 +41,21 @@ public class PassengerPersistenceAdapter implements PassengerRepositoryPort {
         entity.setUser(user);
         user.setPassenger(entity);
         
+        // Ensure wallet for new users
+        if (user.getWallet() == null) {
+            WalletEntity wallet = new WalletEntity();
+            wallet.setId(java.util.UUID.randomUUID().toString());
+            wallet.setUser(user);
+            wallet.setBalance(java.math.BigDecimal.ZERO);
+            user.setWallet(wallet);
+        }
+        
         // Mark both as new if necessary
         if (!userRepository.existsById(user.getId())) {
             user.setNew(true);
             entity.setNew(true);
         } else {
             user.setNew(false);
-            // We should check if passenger exists, but mapsId makes it the same ID
             entity.setNew(false); 
         }
         
