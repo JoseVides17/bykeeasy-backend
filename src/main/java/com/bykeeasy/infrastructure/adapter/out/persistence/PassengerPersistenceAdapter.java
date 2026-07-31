@@ -7,9 +7,8 @@ import com.bykeeasy.infrastructure.adapter.out.persistence.entity.PassengerEntit
 import com.bykeeasy.infrastructure.adapter.out.persistence.entity.UserEntity;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataPassengerRepository;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataUserRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -19,10 +18,8 @@ public class PassengerPersistenceAdapter implements PassengerRepositoryPort {
     private final SpringDataPassengerRepository passengerRepository;
     private final SpringDataUserRepository userRepository;
 
-    @PersistenceContext
-    private final EntityManager entityManager;
-
     @Override
+    @Transactional
     public Passenger save(Passenger passenger) {
         UserEntity user = userRepository.findById(passenger.getId())
                 .orElseGet(() -> {
@@ -31,21 +28,30 @@ public class PassengerPersistenceAdapter implements PassengerRepositoryPort {
                     ue.setEmail(passenger.getEmail());
                     ue.setPassword(passenger.getPassword());
                     ue.setRole(UserRole.PASSENGER);
+                    ue.setNew(true); // Mark as new for persist
                     return ue;
                 });
-
+        
         user.setFullName(passenger.getName());
         user.setPhone(passenger.getPhone());
         user.setProfileImageUrl(passenger.getProfileImageUrl());
-
-        UserEntity savedUser = entityManager.merge(user);
-
+                
         PassengerEntity entity = PersistenceMapper.toEntity(passenger);
-        entity.setUser(savedUser);
-        entity.setUserId(savedUser.getId());
-
-        PassengerEntity saved = entityManager.merge(entity);
-        return PersistenceMapper.toDomain(saved);
+        entity.setUser(user);
+        user.setPassenger(entity);
+        
+        // Mark both as new if necessary
+        if (!userRepository.existsById(user.getId())) {
+            user.setNew(true);
+            entity.setNew(true);
+        } else {
+            user.setNew(false);
+            // We should check if passenger exists, but mapsId makes it the same ID
+            entity.setNew(false); 
+        }
+        
+        UserEntity savedUser = userRepository.save(user);
+        return PersistenceMapper.toDomain(savedUser.getPassenger());
     }
 
     @Override

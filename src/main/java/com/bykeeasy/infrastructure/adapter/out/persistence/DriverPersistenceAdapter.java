@@ -7,9 +7,8 @@ import com.bykeeasy.infrastructure.adapter.out.persistence.entity.DriverEntity;
 import com.bykeeasy.infrastructure.adapter.out.persistence.entity.UserEntity;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataDriverRepository;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataUserRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -19,10 +18,8 @@ public class DriverPersistenceAdapter implements DriverRepositoryPort {
     private final SpringDataDriverRepository driverRepository;
     private final SpringDataUserRepository userRepository;
 
-    @PersistenceContext
-    private final EntityManager entityManager;
-
     @Override
+    @Transactional
     public Driver save(Driver driver) {
         UserEntity user = userRepository.findById(driver.getId())
                 .orElseGet(() -> {
@@ -31,21 +28,29 @@ public class DriverPersistenceAdapter implements DriverRepositoryPort {
                     ue.setEmail(driver.getEmail());
                     ue.setPassword(driver.getPassword());
                     ue.setRole(UserRole.DRIVER);
+                    ue.setNew(true);
                     return ue;
                 });
-
+        
         user.setFullName(driver.getName());
         user.setPhone(driver.getPhone());
         user.setProfileImageUrl(driver.getProfileImageUrl());
         user.setRating(driver.getQualification());
-
-        UserEntity savedUser = entityManager.merge(user);
+                
         DriverEntity entity = PersistenceMapper.toEntity(driver);
-        entity.setUser(savedUser);
-        entity.setUserId(savedUser.getId());
-
-        DriverEntity saved = entityManager.merge(entity);
-        return PersistenceMapper.toDomain(saved);
+        entity.setUser(user);
+        user.setDriver(entity);
+        
+        if (!userRepository.existsById(user.getId())) {
+            user.setNew(true);
+            entity.setNew(true);
+        } else {
+            user.setNew(false);
+            entity.setNew(false);
+        }
+        
+        UserEntity savedUser = userRepository.save(user);
+        return PersistenceMapper.toDomain(savedUser.getDriver());
     }
 
     @Override

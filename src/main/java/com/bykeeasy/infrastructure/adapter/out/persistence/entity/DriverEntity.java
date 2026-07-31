@@ -3,12 +3,15 @@ package com.bykeeasy.infrastructure.adapter.out.persistence.entity;
 import com.bykeeasy.domain.model.DriverStatus;
 import com.bykeeasy.domain.model.DriverVerificationStatus;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.domain.Persistable;
 
 @Entity
 @Table(name = "drivers")
-@Data
-public class DriverEntity {
+@Getter
+@Setter
+public class DriverEntity implements Persistable<String> {
     @Id
     private String userId;
 
@@ -32,4 +35,23 @@ public class DriverEntity {
 
     private Double currentLatitude;
     private Double currentLongitude;
+
+    @Transient
+    private boolean isNew = true;
+
+    @Override
+    public String getId() {
+        return this.userId;
+    }
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    @PostLoad
+    @PostPersist
+    void markNotNew() {
+        this.isNew = false;
+    }
 }
