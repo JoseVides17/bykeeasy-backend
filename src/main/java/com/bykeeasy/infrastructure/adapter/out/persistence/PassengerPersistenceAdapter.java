@@ -7,16 +7,19 @@ import com.bykeeasy.infrastructure.adapter.out.persistence.entity.PassengerEntit
 import com.bykeeasy.infrastructure.adapter.out.persistence.entity.UserEntity;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataPassengerRepository;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataUserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-@RequiredArgsConstructor
 public class PassengerPersistenceAdapter implements PassengerRepositoryPort {
 
     private final SpringDataPassengerRepository passengerRepository;
     private final SpringDataUserRepository userRepository;
+
+    public PassengerPersistenceAdapter(SpringDataPassengerRepository passengerRepository, SpringDataUserRepository userRepository) {
+        this.passengerRepository = passengerRepository;
+        this.userRepository = userRepository;
+    }
 
     @Override
     @Transactional

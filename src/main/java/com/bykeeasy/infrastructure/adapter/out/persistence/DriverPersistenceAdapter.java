@@ -7,16 +7,19 @@ import com.bykeeasy.infrastructure.adapter.out.persistence.entity.DriverEntity;
 import com.bykeeasy.infrastructure.adapter.out.persistence.entity.UserEntity;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataDriverRepository;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.SpringDataUserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-@RequiredArgsConstructor
 public class DriverPersistenceAdapter implements DriverRepositoryPort {
 
     private final SpringDataDriverRepository driverRepository;
     private final SpringDataUserRepository userRepository;
+
+    public DriverPersistenceAdapter(SpringDataDriverRepository driverRepository, SpringDataUserRepository userRepository) {
+        this.driverRepository = driverRepository;
+        this.userRepository = userRepository;
+    }
 
     @Override
     @Transactional

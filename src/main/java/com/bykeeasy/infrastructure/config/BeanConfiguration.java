@@ -1,4 +1,5 @@
 package com.bykeeasy.infrastructure.config;
+// Deployment fix: Removed EntityManager from constructors
 
 import com.bykeeasy.infrastructure.adapter.out.persistence.DriverPersistenceAdapter;
 import com.bykeeasy.infrastructure.adapter.out.persistence.JourneyPersistenceAdapter;
