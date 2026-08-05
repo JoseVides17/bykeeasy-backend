@@ -16,16 +16,13 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        Path uploadPath = Paths.get(uploadDir);
-        String uploadAbsolutePath = uploadPath.toFile().getAbsolutePath();
+        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        String uploadAbsolutePath = uploadPath.toString().replace("\\", "/");
         
-        // Ajuste para compatibilidad total con rutas de Windows en Spring Boot
-        String pathSource = uploadAbsolutePath.replace("\\", "/");
-        if (!pathSource.startsWith("/")) {
-            pathSource = "/" + pathSource;
-        }
+        // Formato universal para rutas de archivos (Windows y Linux)
+        String location = "file:" + (uploadAbsolutePath.startsWith("/") ? "" : "/") + uploadAbsolutePath + "/";
 
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:" + pathSource + "/");
+                .addResourceLocations(location);
     }
 }

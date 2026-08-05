@@ -88,12 +88,9 @@ public class BeanConfiguration {
         return new DestinationService(journeyRepositoryPort);
     }
 
-    @Value("${google.maps.api.key}")
-    private String googleMapsApiKey;
-
     @Bean
     public PlaceSearchUseCase placeSearchUseCase() {
-        return new PlaceSearchService(googleMapsApiKey);
+        return new PlaceSearchService();
     }
 
     @Bean
