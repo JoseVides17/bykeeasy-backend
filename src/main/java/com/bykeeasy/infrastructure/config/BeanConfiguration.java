@@ -88,9 +88,12 @@ public class BeanConfiguration {
         return new DestinationService(journeyRepositoryPort);
     }
 
+    @Value("${serpapi.api.key}")
+    private String serpApiApiKey;
+
     @Bean
     public PlaceSearchUseCase placeSearchUseCase() {
-        return new PlaceSearchService();
+        return new PlaceSearchService(serpApiApiKey);
     }
 
     @Bean
