@@ -8,6 +8,7 @@ import com.bykeeasy.application.port.out.*;
 import com.bykeeasy.application.service.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -87,9 +88,12 @@ public class BeanConfiguration {
         return new DestinationService(journeyRepositoryPort);
     }
 
+    @Value("${google.maps.api.key}")
+    private String googleMapsApiKey;
+
     @Bean
     public PlaceSearchUseCase placeSearchUseCase() {
-        return new PlaceSearchService();
+        return new PlaceSearchService(googleMapsApiKey);
     }
 
     @Bean
