@@ -30,13 +30,36 @@ public class TakeJourneyService implements TakeJourneyUseCase {
 
     @Override
     @Transactional
+    public void startRouteToPickup(String journeyId) {
+        Journey journey = journeyRepository.findById(journeyId)
+                .orElseThrow(() -> new JourneyNotFoundException("Journey not found: " + journeyId));
+        journey.setStatus(JourneyStatus.DRIVER_ON_THE_WAY);
+        journeyRepository.save(journey);
+    }
+
+    @Override
+    @Transactional
+    public void arriveAtPickup(String journeyId) {
+        Journey journey = journeyRepository.findById(journeyId)
+                .orElseThrow(() -> new JourneyNotFoundException("Journey not found: " + journeyId));
+        journey.setStatus(JourneyStatus.DRIVER_AT_PICKUP);
+        journeyRepository.save(journey);
+    }
+
+    @Override
+    @Transactional
+    public void startJourney(String journeyId) {
+        Journey journey = journeyRepository.findById(journeyId)
+                .orElseThrow(() -> new JourneyNotFoundException("Journey not found: " + journeyId));
+        journey.setStatus(JourneyStatus.PASSENGER_ON_BOARD);
+        journeyRepository.save(journey);
+    }
+
+    @Override
+    @Transactional
     public void completeJourney(String journeyId) {
         Journey journey = journeyRepository.findById(journeyId)
                 .orElseThrow(() -> new JourneyNotFoundException("Journey not found: " + journeyId));
-        
-        if (journey.getStatus() == JourneyStatus.ACCEPTED) {
-            journey.startJourney();
-        }
         
         journey.completeJourney();
         journeyRepository.save(journey);
@@ -52,7 +75,6 @@ public class TakeJourneyService implements TakeJourneyUseCase {
             }
         } catch (Exception e) {
             System.err.println("Warning: Could not debit commission for journey " + journey.getId() + ": " + e.getMessage());
-            // We proceed anyway to let the driver continue working
         }
     }
 

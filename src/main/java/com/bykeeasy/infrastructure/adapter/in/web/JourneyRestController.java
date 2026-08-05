@@ -45,6 +45,24 @@ public class JourneyRestController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/{id}/start-route")
+    public ResponseEntity<Void> startRoute(@PathVariable String id) {
+        takeJourneyUseCase.startRouteToPickup(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{id}/arrive")
+    public ResponseEntity<Void> arrive(@PathVariable String id) {
+        takeJourneyUseCase.arriveAtPickup(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{id}/start")
+    public ResponseEntity<Void> startJourney(@PathVariable String id) {
+        takeJourneyUseCase.startJourney(id);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/{id}/complete")
     public ResponseEntity<Void> completeJourney(@PathVariable String id) {
         takeJourneyUseCase.completeJourney(id);

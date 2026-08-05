@@ -5,6 +5,7 @@ public enum JourneyStatus {
     WAITING_FOR_OFFERS,
     ACCEPTED,
     DRIVER_ON_THE_WAY,
+    DRIVER_AT_PICKUP,
     PASSENGER_ON_BOARD,
     COMPLETED,
     CANCELLED
