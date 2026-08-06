@@ -56,6 +56,7 @@ public class RequestJourneyService implements RequestJourneyUseCase {
         List<JourneyStatus> activeStatuses = java.util.List.of(
                 JourneyStatus.ACCEPTED,
                 JourneyStatus.DRIVER_ON_THE_WAY,
+                JourneyStatus.DRIVER_AT_PICKUP,
                 JourneyStatus.PASSENGER_ON_BOARD
         );
         return journeyRepositoryPort.findByDriverIdAndStatuses(driverId, activeStatuses)
