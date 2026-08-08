@@ -4,6 +4,7 @@ import com.bykeeasy.infrastructure.adapter.out.persistence.*;
 import com.bykeeasy.infrastructure.adapter.out.payment.MockPaymentAdapter;
 import com.bykeeasy.infrastructure.adapter.out.persistence.repository.*;
 import com.bykeeasy.application.port.in.*;
+import com.bykeeasy.application.port.in.RateUserUseCase;
 import com.bykeeasy.application.port.out.*;
 import com.bykeeasy.application.service.*;
 import jakarta.persistence.EntityManager;
