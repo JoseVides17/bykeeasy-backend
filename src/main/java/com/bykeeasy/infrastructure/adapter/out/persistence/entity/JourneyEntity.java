@@ -23,6 +23,12 @@ public class JourneyEntity implements Persistable<String> {
 
     private String driverId;
 
+    private String driverName;
+
+    private String vehiclePlate;
+
+    private String vehicleModel;
+
     @Column(nullable = false)
     private Double latOrigin;
 
