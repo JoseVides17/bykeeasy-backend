@@ -1,12 +1,14 @@
 package com.bykeeasy.application.service;
 
 import com.bykeeasy.application.port.in.NegotiationUseCase;
+import com.bykeeasy.application.port.out.DriverRepositoryPort;
 import com.bykeeasy.application.port.out.JourneyRepositoryPort;
 import com.bykeeasy.application.port.out.OfferRepositoryPort;
 import com.bykeeasy.domain.model.Journey;
 import com.bykeeasy.domain.model.JourneyStatus;
 import com.bykeeasy.domain.model.Offer;
 import com.bykeeasy.domain.model.OfferStatus;
+import com.bykeeasy.domain.model.Vehicle;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -57,6 +59,17 @@ public class NegotiationService implements NegotiationUseCase {
 
         // Update journey with accepted driver and fare
         journey.setDriverId(offer.getDriverId());
+        
+        // Recuperar datos reales del conductor y vehículo para el historial
+        driverRepository.findById(offer.getDriverId()).ifPresent(driver -> {
+            journey.setDriverName(driver.getName());
+            if (driver.getVehicles() != null && !driver.getVehicles().isEmpty()) {
+                Vehicle v = driver.getVehicles().get(0);
+                journey.setVehiclePlate(v.getLicensePlate());
+                journey.setVehicleModel(v.getBrand() + " " + v.getModel());
+            }
+        });
+
         journey.setFare(offer.getProposedFare());
         journey.setStatus(JourneyStatus.ACCEPTED);
         journeyRepository.save(journey);
