@@ -41,7 +41,8 @@ public class DriverPersistenceAdapter implements DriverRepositoryPort {
         user.setFullName(driver.getName());
         user.setPhone(driver.getPhone());
         user.setProfileImageUrl(driver.getProfileImageUrl());
-        user.setRating(driver.getQualification());
+        // REMOVED: user.setRating(driver.getQualification()); 
+        // We don't overwrite rating from the driver app, only from passenger reviews.
                 
         DriverEntity entity = user.getDriver();
         if (entity == null) {
