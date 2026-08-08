@@ -26,6 +26,15 @@ public class Journey {
     private JourneyStatus status;
     private final LocalDateTime createdAt;
 
+    public Journey(
+            String id,
+            String passengerId,
+            String passengerName,
+            String driverId,
+            Coordinate origin,
+            String originAddress,
+            Coordinate destination,
+            String destinationAddress,
             BigDecimal fare,
             BigDecimal commission,
             JourneyStatus status,

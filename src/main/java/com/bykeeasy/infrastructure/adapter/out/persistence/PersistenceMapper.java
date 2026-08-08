@@ -213,6 +213,9 @@ public class PersistenceMapper {
         entity.setCommission(journey.getCommission());
         entity.setStatus(journey.getStatus());
         entity.setCreatedAt(journey.getCreatedAt());
+        entity.setDriverName(journey.getDriverName());
+        entity.setVehiclePlate(journey.getVehiclePlate());
+        entity.setVehicleModel(journey.getVehicleModel());
 
         return entity;
     }
