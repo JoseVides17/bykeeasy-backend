@@ -17,10 +17,12 @@ public class NegotiationService implements NegotiationUseCase {
 
     private final OfferRepositoryPort offerRepository;
     private final JourneyRepositoryPort journeyRepository;
+    private final DriverRepositoryPort driverRepository;
 
-    public NegotiationService(OfferRepositoryPort offerRepository, JourneyRepositoryPort journeyRepository) {
+    public NegotiationService(OfferRepositoryPort offerRepository, JourneyRepositoryPort journeyRepository, DriverRepositoryPort driverRepository) {
         this.offerRepository = offerRepository;
         this.journeyRepository = journeyRepository;
+        this.driverRepository = driverRepository;
     }
 
     @Override

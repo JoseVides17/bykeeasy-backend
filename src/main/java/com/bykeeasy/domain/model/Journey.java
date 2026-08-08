@@ -14,6 +14,9 @@ public class Journey {
     private final String passengerId;
     private final String passengerName;
     private String driverId;
+    private String driverName;
+    private String vehiclePlate;
+    private String vehicleModel;
     private final Coordinate origin;
     private final String originAddress;
     private final Coordinate destination;
@@ -23,19 +26,13 @@ public class Journey {
     private JourneyStatus status;
     private final LocalDateTime createdAt;
 
-    public Journey(
-            String id,
-            String passengerId,
-            String passengerName,
-            String driverId,
-            Coordinate origin,
-            String originAddress,
-            Coordinate destination,
-            String destinationAddress,
             BigDecimal fare,
             BigDecimal commission,
             JourneyStatus status,
-            LocalDateTime createdAt
+            LocalDateTime createdAt,
+            String driverName,
+            String vehiclePlate,
+            String vehicleModel
     ) {
         if (passengerId == null || passengerId.isBlank()) {
             throw new IllegalArgumentException("Passenger id is required.");
@@ -57,6 +54,9 @@ public class Journey {
         this.passengerId = passengerId;
         this.passengerName = passengerName;
         this.driverId = driverId;
+        this.driverName = driverName;
+        this.vehiclePlate = vehiclePlate;
+        this.vehicleModel = vehicleModel;
         this.origin = origin;
         this.originAddress = originAddress;
         this.destination = destination;

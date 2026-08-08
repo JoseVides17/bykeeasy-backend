@@ -189,7 +189,10 @@ public class PersistenceMapper {
                 entity.getFare(),
                 entity.getCommission(),
                 entity.getStatus(),
-                entity.getCreatedAt()
+                entity.getCreatedAt(),
+                entity.getDriverName(),
+                entity.getVehiclePlate(),
+                entity.getVehicleModel()
         );
     }
 

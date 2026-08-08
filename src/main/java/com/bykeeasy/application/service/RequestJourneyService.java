@@ -33,7 +33,10 @@ public class RequestJourneyService implements RequestJourneyUseCase {
                 rate,
                 BigDecimal.ZERO,
                 JourneyStatus.REQUESTED,
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                null,
+                null,
+                null
         );
         
         newJourney.calculateCommission(new BigDecimal("0.1"));

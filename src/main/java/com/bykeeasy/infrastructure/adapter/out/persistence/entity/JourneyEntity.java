@@ -53,7 +53,7 @@ public class JourneyEntity implements Persistable<String> {
     private LocalDateTime createdAt;
 
     @Transient
-    private boolean isNew = true; // Variable de control que no se persiste en BD
+    private boolean isNew = true;
 
     @Override
     public String getId() {
@@ -62,7 +62,7 @@ public class JourneyEntity implements Persistable<String> {
 
     @Override
     public boolean isNew() {
-        return isNew; // Si es true, Spring Data JPA llamará a em.persist()
+        return isNew;
     }
 
     public void setNew(boolean isNew) {

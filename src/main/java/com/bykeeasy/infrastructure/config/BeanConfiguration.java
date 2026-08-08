@@ -83,8 +83,8 @@ public class BeanConfiguration {
     }
 
     @Bean
-    public NegotiationUseCase negotiationUseCase(OfferRepositoryPort offerRepositoryPort, JourneyRepositoryPort journeyRepositoryPort) {
-        return new NegotiationService(offerRepositoryPort, journeyRepositoryPort);
+    public NegotiationUseCase negotiationUseCase(OfferRepositoryPort offerRepositoryPort, JourneyRepositoryPort journeyRepositoryPort, DriverRepositoryPort driverRepositoryPort) {
+        return new NegotiationService(offerRepositoryPort, journeyRepositoryPort, driverRepositoryPort);
     }
 
     @Bean
