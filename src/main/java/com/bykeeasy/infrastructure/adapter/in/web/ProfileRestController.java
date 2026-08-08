@@ -1,5 +1,6 @@
 package com.bykeeasy.infrastructure.adapter.in.web;
 
+import com.bykeeasy.application.port.in.RateUserUseCase;
 import com.bykeeasy.application.port.in.UpdateProfileUseCase;
 import com.bykeeasy.domain.model.UserRole;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import java.io.IOException;
 public class ProfileRestController {
 
     private final UpdateProfileUseCase updateProfileUseCase;
+    private final RateUserUseCase rateUserUseCase;
 
     @PatchMapping
     public ResponseEntity<Void> updateProfile(
@@ -55,6 +57,15 @@ public class ProfileRestController {
                 propertyCard != null ? propertyCard.getOriginalFilename() : null
         );
         
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{userId}/rate")
+    public ResponseEntity<Void> rateUser(
+            @PathVariable String userId,
+            @RequestParam double rating
+    ) {
+        rateUserUseCase.rateUser(userId, rating);
         return ResponseEntity.ok().build();
     }
 }

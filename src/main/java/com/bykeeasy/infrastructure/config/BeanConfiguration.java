@@ -130,4 +130,9 @@ public class BeanConfiguration {
     public VehicleUseCase vehicleUseCase(VehicleRepositoryPort vehicleRepositoryPort, FileStoragePort fileStorage) {
         return new com.bykeeasy.application.service.VehicleService(vehicleRepositoryPort, fileStorage);
     }
+
+    @Bean
+    public RateUserUseCase rateUserUseCase(SpringDataUserRepository userRepository) {
+        return new RateUserService(userRepository);
+    }
 }
